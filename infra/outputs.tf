@@ -1,0 +1,24 @@
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID (used for cache invalidation)"
+  value       = aws_cloudfront_distribution.main.id
+}
+
+output "frontend_bucket_name" {
+  description = "S3 bucket name for frontend assets"
+  value       = aws_s3_bucket.frontend.id
+}
+
+output "image_bucket_name" {
+  description = "S3 bucket name for the reveal image"
+  value       = aws_s3_bucket.images.id
+}
+
+output "api_gateway_url" {
+  description = "API Gateway invoke URL"
+  value       = "" # Populated when apigateway.tf is created
+}
+
+output "dynamodb_table_name" {
+  description = "DynamoDB table name"
+  value       = aws_dynamodb_table.state.name
+}
