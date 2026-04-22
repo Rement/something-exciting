@@ -1,0 +1,21 @@
+# Secrets — never commit
+config.json
+infra/terraform.tfvars
+
+# Terraform state & working files
+*.tfstate
+*.tfstate.backup
+infra/.terraform/
+infra/.terraform.lock.hcl
+
+# AWS credentials
+.aws/
+
+# Node
+backend/node_modules/
+
+# IDE
+.idea/
+
+# OS
+.DS_Store
