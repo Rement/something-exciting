@@ -15,7 +15,7 @@ output "image_bucket_name" {
 
 output "api_gateway_url" {
   description = "API Gateway invoke URL"
-  value       = "" # Populated when apigateway.tf is created
+  value       = aws_api_gateway_stage.api.invoke_url
 }
 
 output "dynamodb_table_name" {
