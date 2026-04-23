@@ -3,10 +3,14 @@ import { now } from './time.js';
 let el;
 let intervalId;
 let revealDate;
+let readyCb;
+let fired = false;
 
-export function initCountdown(element, revealDateISO) {
+export function initCountdown(element, revealDateISO, onReady) {
   el = element;
   revealDate = new Date(revealDateISO);
+  readyCb = onReady;
+  fired = false;
   tick();
   intervalId = setInterval(tick, 1000);
 }
@@ -15,11 +19,16 @@ export function stopCountdown() {
   clearInterval(intervalId);
 }
 
+export function isCountdownDone() {
+  return revealDate && now() >= revealDate;
+}
+
 function tick() {
   const diff = revealDate - now();
 
   if (diff <= 0) {
     el.textContent = '';
+    if (!fired && readyCb) { fired = true; readyCb(); }
     return;
   }
 

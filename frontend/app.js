@@ -1,5 +1,5 @@
 import { api, setAuth, clearAuth, getToken, getRole } from './api.js';
-import { initCountdown, stopCountdown } from './countdown.js';
+import { initCountdown, stopCountdown, isCountdownDone } from './countdown.js';
 import { initScratch, resizeScratch, updateScratchState } from './scratch.js';
 import { now } from './time.js';
 
@@ -73,7 +73,7 @@ function enter(role) {
 /* ---- Main app ---- */
 
 async function startApp() {
-  initCountdown(countEl, REVEAL_ISO);
+  initCountdown(countEl, REVEAL_ISO, enableRevealBtn);
 
   let state;
   try {
@@ -160,10 +160,15 @@ function applyState(state) {
     status.textContent = 'Come back soon\u2026';
   }
 
-  // Reveal button
+  // Reveal button — show when it's reveal time, but disabled until countdown hits zero
   if (isRevealTime && revBtn.hidden) {
     revBtn.hidden = false;
+    revBtn.disabled = !isCountdownDone();
   }
+}
+
+function enableRevealBtn() {
+  revBtn.disabled = false;
 }
 
 revBtn.addEventListener('click', () => {
