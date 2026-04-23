@@ -23,9 +23,7 @@ locals {
 
   lambda_env = {
     TABLE_NAME       = aws_dynamodb_table.state.name
-    JWT_SECRET       = var.jwt_secret
-    USER_PIN         = var.user_pin
-    ADMIN_PIN        = var.admin_pin
+    SECRET_ARN       = aws_secretsmanager_secret.app.arn
     START_DATE_ISO   = local.config.startDateISO
     REVEAL_DATE_ISO  = local.config.revealDateISO
     TIMEZONE         = local.config.timezone

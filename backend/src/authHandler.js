@@ -12,10 +12,10 @@ export async function handler(event) {
     const { pin } = JSON.parse(event.body || '{}');
     if (!pin) return json(400, { error: 'PIN required' });
 
-    const role = authenticate(pin);
+    const role = await authenticate(pin);
     if (!role) return json(401, { error: 'Invalid PIN' });
 
-    const token = signToken(role);
+    const token = await signToken(role);
     logger.info('auth success', { role });
     return json(200, { token, role });
   } catch (err) {

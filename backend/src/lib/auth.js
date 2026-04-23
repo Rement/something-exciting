@@ -1,21 +1,21 @@
 import jwt from 'jsonwebtoken';
+import { getSecrets } from './secrets.js';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const USER_PIN = process.env.USER_PIN;
-const ADMIN_PIN = process.env.ADMIN_PIN;
-
-export function authenticate(pin) {
-  if (pin === ADMIN_PIN) return 'admin';
-  if (pin === USER_PIN) return 'user';
+export async function authenticate(pin) {
+  const { userPin, adminPin } = await getSecrets();
+  if (pin === adminPin) return 'admin';
+  if (pin === userPin) return 'user';
   return null;
 }
 
-export function signToken(role) {
-  return jwt.sign({ role }, JWT_SECRET, { expiresIn: '30d' });
+export async function signToken(role) {
+  const { jwtSecret } = await getSecrets();
+  return jwt.sign({ role }, jwtSecret, { expiresIn: '30d' });
 }
 
-export function verifyToken(token) {
-  return jwt.verify(token, JWT_SECRET);
+export async function verifyToken(token) {
+  const { jwtSecret } = await getSecrets();
+  return jwt.verify(token, jwtSecret);
 }
 
 /** API Gateway TOKEN authorizer */
@@ -24,8 +24,7 @@ export async function authorize(event) {
   if (!token) throw new Error('Unauthorized');
 
   try {
-    const decoded = verifyToken(token);
-    // Allow all methods/resources for this API — result is cached per token
+    const decoded = await verifyToken(token);
     const arnBase = event.methodArn.replace(/\/[^/]+\/[^/]+$/, '/*/*');
     return {
       principalId: decoded.role,

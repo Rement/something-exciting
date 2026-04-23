@@ -56,6 +56,22 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
   })
 }
 
+# ----- Secrets Manager — read app secrets -----
+
+resource "aws_iam_role_policy" "lambda_secrets" {
+  name = "${local.prefix}-lambda-secrets"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "secretsmanager:GetSecretValue"
+      Resource = aws_secretsmanager_secret.app.arn
+    }]
+  })
+}
+
 # ----- SES — send email from the verified domain only -----
 
 resource "aws_iam_role_policy" "lambda_ses" {
