@@ -12,29 +12,22 @@ data "archive_file" "backend" {
 
 locals {
   lambda_functions = {
-    auth       = "src/authHandler.handler"
-    state      = "src/stateHandler.handler"
-    scratch    = "src/scratchHandler.handler"
-    reveal     = "src/revealHandler.handler"
-    reset      = "src/resetHandler.handler"
-    email-cron = "src/emailCronHandler.handler"
-    authorizer = "src/lib/auth.authorize"
+    auth             = "src/authHandler.handler"
+    state            = "src/stateHandler.handler"
+    scratch          = "src/scratchHandler.handler"
+    reveal           = "src/revealHandler.handler"
+    reset            = "src/resetHandler.handler"
+    email-cron       = "src/emailCronHandler.handler"
+    telegram-webhook = "src/telegramHandler.handler"
+    authorizer       = "src/lib/auth.authorize"
   }
 
   lambda_env = {
-    TABLE_NAME       = aws_dynamodb_table.state.name
-    SECRET_ARN       = aws_secretsmanager_secret.app.arn
-    START_DATE_ISO   = local.config.startDateISO
-    REVEAL_DATE_ISO  = local.config.revealDateISO
-    TIMEZONE         = local.config.timezone
-    GRID_COLS        = tostring(local.config.gridCols)
-    GRID_ROWS        = tostring(local.config.gridRows)
-    TILE_DROP_HOURS  = jsonencode(local.config.tileDropHoursPST)
-    RECIPIENT_EMAIL  = var.recipient_email
-    SENDER_EMAIL     = var.sender_email
-    DOMAIN           = var.domain
-    PERSONAL_MESSAGE = local.config.personalMessage
-    APP_TITLE        = local.config.appTitle
+    TABLE_NAME   = aws_dynamodb_table.state.name
+    SECRET_ARN   = aws_secretsmanager_secret.app.arn
+    DOMAIN       = var.domain
+    APP_TITLE    = local.config.appTitle
+    IMAGE_BUCKET = aws_s3_bucket.images.id
   }
 }
 

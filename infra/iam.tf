@@ -49,9 +49,28 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
         "dynamodb:GetItem",
         "dynamodb:PutItem",
         "dynamodb:UpdateItem",
-        "dynamodb:DeleteItem"
+        "dynamodb:DeleteItem",
+        "dynamodb:Scan"
       ]
       Resource = "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${local.prefix}-state"
+    }]
+  })
+}
+
+# ----- S3 — upload images -----
+
+resource "aws_iam_role_policy" "lambda_s3_images" {
+  name = "${local.prefix}-lambda-s3-images"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "s3:PutObject"
+      ]
+      Resource = "${aws_s3_bucket.images.arn}/*"
     }]
   })
 }
@@ -72,21 +91,3 @@ resource "aws_iam_role_policy" "lambda_secrets" {
   })
 }
 
-# ----- SES — send email from the verified domain only -----
-
-resource "aws_iam_role_policy" "lambda_ses" {
-  name = "${local.prefix}-lambda-ses"
-  role = aws_iam_role.lambda_exec.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "ses:SendEmail",
-        "ses:SendRawEmail"
-      ]
-      Resource = data.aws_ses_domain_identity.main.arn
-    }]
-  })
-}

@@ -12,11 +12,15 @@ resource "aws_api_gateway_rest_api" "main" {
 
 locals {
   api_routes = {
-    auth    = { method = "POST", auth = false, handler_key = "auth" }
-    state   = { method = "GET", auth = true, handler_key = "state" }
-    scratch = { method = "POST", auth = true, handler_key = "scratch" }
-    reveal  = { method = "POST", auth = true, handler_key = "reveal" }
-    reset   = { method = "POST", auth = true, handler_key = "reset" }
+    auth     = { method = "POST", auth = false, handler_key = "auth" }
+    state    = { method = "GET", auth = true, handler_key = "state" }
+    scratch  = { method = "POST", auth = true, handler_key = "scratch" }
+    reveal   = { method = "POST", auth = true, handler_key = "reveal" }
+    reset    = { method = "POST", auth = true, handler_key = "reset" }
+    email    = { method = "POST", auth = true, handler_key = "state" }
+    config   = { method = "POST", auth = true, handler_key = "state" }
+    events   = { method = "GET", auth = true, handler_key = "state" }
+    telegram = { method = "POST", auth = false, handler_key = "telegram-webhook" }
   }
 }
 

@@ -10,12 +10,6 @@ variable "domain" {
   default     = "justexciting.com"
 }
 
-variable "user_pin" {
-  description = "PIN for the birthday recipient"
-  type        = string
-  sensitive   = true
-}
-
 variable "admin_pin" {
   description = "PIN for the admin panel"
   type        = string
@@ -28,13 +22,8 @@ variable "jwt_secret" {
   sensitive   = true
 }
 
-variable "recipient_email" {
-  description = "Email address of the birthday recipient"
+variable "telegram_bot_token" {
+  description = "Telegram bot token used to deliver notifications"
   type        = string
-}
-
-variable "sender_email" {
-  description = "Sender email address (must be verified in SES)"
-  type        = string
-  default     = "hello@justexciting.com"
+  sensitive   = true
 }

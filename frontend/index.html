@@ -7,6 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>For You</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -19,23 +22,66 @@
 <div id="screen-pin" class="screen">
   <div class="pin-container">
     <h1 class="app-title">For You</h1>
+    <div class="ornament">&#x25C6;</div>
     <input id="pin-input" type="tel" inputmode="numeric"
            maxlength="4" autocomplete="off">
     <p id="pin-error" class="error"></p>
   </div>
 </div>
 
+<!-- Email -->
+<div id="screen-email" class="screen">
+  <div class="pin-container">
+    <h1 class="app-title">For You</h1>
+    <p class="email-prompt">Enter your email to receive updates</p>
+    <input id="email-input" type="email" placeholder="your@email.com" autocomplete="email">
+    <p id="email-error" class="error"></p>
+  </div>
+</div>
+
 <!-- Main -->
 <div id="screen-main" class="screen">
-  <div class="main-container">
-    <div id="countdown" class="countdown"></div>
-    <p id="status-line" class="status-line"></p>
-    <div id="grid-container" class="grid-container">
-      <img id="reveal-image" src="/image/reveal.jpg" alt="">
-      <canvas id="scratch-canvas"></canvas>
+
+  <!-- Hero: countdown fills the viewport -->
+  <section class="hero">
+    <div class="hero-inner">
+      <h1 class="hero-title" id="hero-title">For You</h1>
+      <div class="hero-ornament">&#x25C6;</div>
+      <div id="countdown" class="countdown"></div>
+      <p id="status-line" class="status-line"></p>
+      <p id="hero-warm" class="hero-warm"></p>
     </div>
-    <button id="reveal-btn" class="reveal-btn" hidden>Reveal</button>
-    <p id="personal-message" class="personal-message" hidden></p>
+    <button class="scroll-hint" aria-label="Scroll down" id="scroll-hint">
+      <span class="scroll-hint-text">Cards</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M4 7l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </section>
+
+  <!-- Cards section: 1 start + 6x4 grid + 1 end -->
+  <section class="cards-section">
+    <div class="cards-wrapper">
+      <div class="cards-header">
+        <span id="cards-progress" class="cards-progress"></span>
+      </div>
+      <div id="cards-start" class="cards-row cards-row--solo"></div>
+      <div id="cards-grid" class="cards-grid"></div>
+      <div id="cards-end" class="cards-row cards-row--solo"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Card modal (bottom sheet) -->
+<div id="card-modal" class="card-modal" hidden aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="card-modal-backdrop" id="card-modal-backdrop"></div>
+  <div class="card-modal-sheet" id="card-modal-sheet">
+    <div class="card-modal-handle" aria-hidden="true"></div>
+    <button class="card-modal-close" id="card-modal-close" aria-label="Close">&times;</button>
+    <div class="card-modal-num" id="card-modal-num"></div>
+    <div class="card-modal-icon" id="card-modal-icon" aria-hidden="true"></div>
+    <p class="card-modal-text" id="card-modal-text"></p>
   </div>
 </div>
 
@@ -43,32 +89,58 @@
 <div id="screen-admin" class="screen">
   <div class="admin-container">
     <h2 class="admin-title">Admin</h2>
-    <div class="admin-status">
-      <div>Scratched: <span id="admin-scratched">&mdash;</span></div>
-      <div>Unlocked: <span id="admin-unlocked">&mdash;</span></div>
-      <div>Revealed: <span id="admin-revealed">&mdash;</span></div>
-      <div>Last scratch: <span id="admin-last-scratch">&mdash;</span></div>
-      <div>Sim time: <span id="admin-current-time">&mdash;</span></div>
+
+    <!-- Events list -->
+    <div class="admin-section">
+      <h3 class="admin-section-title">Events</h3>
+      <div id="admin-events-list" class="admin-events-list"></div>
+      <button id="admin-add-event" class="admin-add-btn">+ New Event</button>
     </div>
-    <div class="admin-actions">
-      <button id="admin-force-reveal">Force Reveal</button>
-      <button id="admin-reset">Reset All</button>
-      <button id="admin-unlock-all">Unlock All Tiles</button>
-      <button id="admin-lock-all">Lock All Tiles</button>
+
+    <!-- Event form (hidden by default) -->
+    <div id="admin-form" class="admin-form" hidden>
+      <h3 class="admin-section-title" id="admin-form-title">New Event</h3>
+      <div class="admin-form-grid">
+        <label class="admin-label">
+          <span>PIN</span>
+          <input type="text" class="admin-field" data-field="pin" maxlength="8" placeholder="4-digit PIN">
+        </label>
+        <label class="admin-label">
+          <span>Recipient Name</span>
+          <input type="text" class="admin-field" data-field="recipientName" placeholder="e.g. Nadya">
+        </label>
+        <div class="admin-label admin-label--full">
+          <span class="admin-cards-header">
+            <span>Cards (26 total: 1 start + 24 grid + 1 end)</span>
+            <button type="button" id="admin-cards-fill" class="admin-cards-fill">Distribute times evenly</button>
+          </span>
+          <div id="admin-cards-rows" class="admin-cards-rows"></div>
+        </div>
+      </div>
+      <div class="admin-form-actions">
+        <button id="admin-form-save" class="admin-form-btn admin-form-btn--primary">Save</button>
+        <button id="admin-form-cancel" class="admin-form-btn">Cancel</button>
+      </div>
     </div>
-    <div class="admin-sim">
-      <label for="admin-sim-date">Simulate Date</label>
-      <select id="admin-sim-date">
-        <option value="">Real time</option>
-        <option value="2026-05-11T21:00:00-07:00">Launch (May 11 9pm)</option>
-        <option value="2026-05-12T12:00:00-07:00">Day 2 noon</option>
-        <option value="2026-05-13T18:00:00-07:00">Day 3 6pm</option>
-        <option value="2026-05-14T15:00:00-07:00">Day 4 3pm</option>
-        <option value="2026-05-15T12:59:00-07:00">Reveal day 12:59pm</option>
-        <option value="2026-05-15T13:01:00-07:00">Reveal day 1:01pm</option>
-      </select>
+
+    <!-- Tools -->
+    <div class="admin-section">
+      <h3 class="admin-section-title">Time Simulation</h3>
+      <div class="admin-sim">
+        <select id="admin-sim-date">
+          <option value="">Real time</option>
+          <option value="2026-05-11T21:00:00-07:00">Launch (May 11 9pm)</option>
+          <option value="2026-05-12T12:00:00-07:00">Day 2 noon</option>
+          <option value="2026-05-13T18:00:00-07:00">Day 3 6pm</option>
+          <option value="2026-05-14T15:00:00-07:00">Day 4 3pm</option>
+          <option value="2026-05-15T12:59:00-07:00">Reveal day 12:59pm</option>
+          <option value="2026-05-15T13:01:00-07:00">Reveal day 1:01pm</option>
+        </select>
+      </div>
+      <div class="admin-clock">Sim time: <span id="admin-current-time">&mdash;</span></div>
     </div>
-    <button id="admin-back" class="admin-back">Back to user view</button>
+
+    <button id="admin-back" class="admin-back">Back</button>
   </div>
 </div>
 

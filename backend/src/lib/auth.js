@@ -2,15 +2,15 @@ import jwt from 'jsonwebtoken';
 import { getSecrets } from './secrets.js';
 
 export async function authenticate(pin) {
-  const { userPin, adminPin } = await getSecrets();
-  if (pin === adminPin) return 'admin';
-  if (pin === userPin) return 'user';
+  const secrets = await getSecrets();
+  if (pin === secrets.adminPin) return 'admin';
   return null;
 }
 
-export async function signToken(role) {
+export async function signToken(payload) {
   const { jwtSecret } = await getSecrets();
-  return jwt.sign({ role }, jwtSecret, { expiresIn: '30d' });
+  const data = typeof payload === 'string' ? { role: payload } : payload;
+  return jwt.sign(data, jwtSecret, { expiresIn: '30d' });
 }
 
 export async function verifyToken(token) {
@@ -32,7 +32,7 @@ export async function authorize(event) {
         Version: '2012-10-17',
         Statement: [{ Action: 'execute-api:Invoke', Effect: 'Allow', Resource: arnBase }],
       },
-      context: { role: decoded.role },
+      context: { role: decoded.role, eventId: decoded.eventId || '' },
     };
   } catch {
     throw new Error('Unauthorized');

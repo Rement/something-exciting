@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
 }
 
@@ -46,10 +50,6 @@ locals {
 data "aws_route53_zone" "main" {
   name         = "${var.domain}."
   private_zone = false
-}
-
-data "aws_ses_domain_identity" "main" {
-  domain = var.domain
 }
 
 data "aws_caller_identity" "current" {}

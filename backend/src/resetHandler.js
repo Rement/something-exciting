@@ -1,13 +1,5 @@
-import { resetState } from './lib/db.js';
-import { getUnlockedTileCount } from './lib/schedule.js';
+import { resetEvent } from './lib/db.js';
 import { logger } from './lib/logger.js';
-
-const SCHEDULE_CONFIG = {
-  startDateISO: process.env.START_DATE_ISO,
-  timezone: process.env.TIMEZONE,
-  tileDropHours: JSON.parse(process.env.TILE_DROP_HOURS || '[]'),
-  gridCols: parseInt(process.env.GRID_COLS || '6'),
-};
 
 const json = (statusCode, body) => ({
   statusCode,
@@ -22,15 +14,12 @@ export async function handler(event) {
       return json(403, { error: 'Admin access required' });
     }
 
-    const state = await resetState();
-    const now = new Date();
-    logger.info('state reset');
-    return json(200, {
-      scratchedTiles: state.scratchedTiles,
-      revealed: state.revealed,
-      unlockedTileCount: getUnlockedTileCount(now, SCHEDULE_CONFIG),
-      serverTimeISO: now.toISOString(),
-    });
+    const { eventId } = JSON.parse(event.body || '{}');
+    if (!eventId) return json(400, { error: 'eventId required' });
+
+    await resetEvent(eventId);
+    logger.info('event reset', { eventId });
+    return json(200, { ok: true });
   } catch (err) {
     logger.error('reset error', { error: err.message });
     return json(500, { error: 'Internal server error' });

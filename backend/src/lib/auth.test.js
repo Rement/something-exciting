@@ -9,15 +9,12 @@ process.env.ADMIN_PIN = '5678';
 const { authenticate, signToken, verifyToken, authorize } = await import('./auth.js');
 
 describe('authenticate', () => {
-  it('returns "user" for user PIN', async () => {
-    assert.equal(await authenticate('1234'), 'user');
-  });
-
   it('returns "admin" for admin PIN', async () => {
     assert.equal(await authenticate('5678'), 'admin');
   });
 
-  it('returns null for wrong PIN', async () => {
+  it('returns null for non-admin PIN (user PINs live in DynamoDB)', async () => {
+    assert.equal(await authenticate('1234'), null);
     assert.equal(await authenticate('0000'), null);
     assert.equal(await authenticate(''), null);
   });

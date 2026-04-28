@@ -41,9 +41,11 @@ async function request(method, path, body) {
 }
 
 export const api = {
-  auth:    (pin) => request('POST', '/auth', { pin }),
-  state:   ()   => request('GET',  '/state'),
-  scratch: (i)  => request('POST', '/scratch', { tileIndex: i }),
-  reveal:  ()   => request('POST', '/reveal'),
-  reset:   ()   => request('POST', '/reset'),
+  auth:       (pin) => request('POST', '/auth', { pin }),
+  state:      (eventId) => request('GET', '/state' + (eventId ? `?eventId=${eventId}` : '')),
+  scratch:    (i)  => request('POST', '/scratch', { tileIndex: i }),
+  reveal:     (id) => request('POST', '/reveal', { eventId: id }),
+  reset:      (id) => request('POST', '/reset', { eventId: id }),
+  events:     ()   => request('GET',  '/events'),
+  saveConfig: (c)  => request('POST', '/config', c),
 };

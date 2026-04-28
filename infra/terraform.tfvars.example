@@ -1,8 +1,6 @@
-go# Copy this file to terraform.tfvars and fill in real values.
+# Copy this file to terraform.tfvars and fill in real values.
 # Do NOT commit terraform.tfvars to git.
 
-user_pin        = "REPLACE_ME"
-admin_pin       = "REPLACE_ME"
-jwt_secret      = "REPLACE_ME_RANDOM_32_CHAR_STRING"
-recipient_email = "REPLACE_ME@example.com"
-sender_email    = "hello@justexciting.com"
+admin_pin          = "REPLACE_ME"
+jwt_secret         = "REPLACE_ME_RANDOM_32_CHAR_STRING"
+telegram_bot_token = "REPLACE_ME_TELEGRAM_BOT_TOKEN"

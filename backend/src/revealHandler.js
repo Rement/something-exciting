@@ -1,4 +1,3 @@
-import { setRevealed } from './lib/db.js';
 import { logger } from './lib/logger.js';
 
 const json = (statusCode, body) => ({
@@ -7,18 +6,7 @@ const json = (statusCode, body) => ({
   body: JSON.stringify(body),
 });
 
-export async function handler(event) {
-  try {
-    const role = event.requestContext?.authorizer?.role;
-    if (role !== 'admin') {
-      return json(403, { error: 'Admin access required' });
-    }
-
-    await setRevealed();
-    logger.info('revealed');
-    return json(200, { revealed: true });
-  } catch (err) {
-    logger.error('reveal error', { error: err.message });
-    return json(500, { error: 'Internal server error' });
-  }
+export async function handler() {
+  logger.info('reveal endpoint called — no-op in card model');
+  return json(410, { error: 'Reveal endpoint removed; use cards instead' });
 }

@@ -1,46 +1,67 @@
-import { sendEmail } from './lib/ses.js';
+import { sendTelegram } from './lib/telegram.js';
+import { listEvents, addNotifiedTiles } from './lib/db.js';
+import { getUnlockedCardIndices } from './lib/schedule.js';
 import { logger } from './lib/logger.js';
 
-const RECIPIENT = process.env.RECIPIENT_EMAIL;
-const SENDER = process.env.SENDER_EMAIL;
 const DOMAIN = process.env.DOMAIN;
-const APP_TITLE = process.env.APP_TITLE;
+const TOTAL_CARDS = 26;
 
-const TRIGGERS = {
-  launch: {
-    subject: 'Something just arrived for you \uD83C\uDF81',
-    template: 'launch',
-  },
-  daily: {
-    subject: 'New tiles are waiting for you today',
-    template: 'daily',
-  },
-  'reveal-day': {
-    subject: "Today's the day.",
-    template: 'reveal-day',
-  },
-};
+function tileMessage(card, index, total, recipientName) {
+  const icon = card?.icon || '🎁';
+  const greeting = recipientName ? `${recipientName}, ` : '';
+  if (index === 0) {
+    return `${icon} ${greeting}первая карточка готова.\nОткрывай: https://${DOMAIN}`;
+  }
+  if (index === total - 1) {
+    return `${icon} ${greeting}последняя карточка ждёт тебя.\nhttps://${DOMAIN}`;
+  }
+  return `${icon} Новая карточка ${index + 1} из ${total}.\nhttps://${DOMAIN}`;
+}
 
 export async function handler(event) {
-  const trigger = event.trigger;
-  const config = TRIGGERS[trigger];
-  if (!config) {
-    logger.error('unknown trigger', { trigger });
-    return { statusCode: 400, error: `Unknown trigger: ${trigger}` };
+  const trigger = event.trigger || 'tile-unlock';
+
+  const events = await listEvents();
+  const now = new Date();
+  let sent = 0;
+
+  for (const ev of events) {
+    if (!ev.telegramChatId) continue;
+    if (ev.scratchedTiles?.includes(TOTAL_CARDS - 1)) continue;
+
+    const unlocked = getUnlockedCardIndices(now, ev.cards);
+    const notified = new Set(ev.notifiedTiles || []);
+    const toNotify = unlocked.filter((i) => !notified.has(i));
+    if (!toNotify.length) continue;
+
+    const successfullyNotified = [];
+    for (const idx of toNotify) {
+      try {
+        await sendTelegram({
+          chatId: ev.telegramChatId,
+          text: tileMessage(ev.cards[idx], idx, TOTAL_CARDS, ev.recipientName),
+        });
+        successfullyNotified.push(idx);
+        sent++;
+      } catch (err) {
+        logger.error('telegram failed', {
+          trigger,
+          chatId: ev.telegramChatId,
+          eventId: ev.eventId,
+          tileIndex: idx,
+          error: err.message,
+        });
+      }
+    }
+
+    if (successfullyNotified.length) {
+      await addNotifiedTiles(ev.eventId, successfullyNotified);
+      logger.info('tiles notified', {
+        eventId: ev.eventId,
+        tiles: successfullyNotified,
+      });
+    }
   }
 
-  try {
-    await sendEmail({
-      to: RECIPIENT,
-      from: SENDER,
-      subject: config.subject,
-      template: config.template,
-      vars: { domain: DOMAIN, appTitle: APP_TITLE },
-    });
-    logger.info('email sent', { trigger, to: RECIPIENT });
-    return { statusCode: 200 };
-  } catch (err) {
-    logger.error('email failed', { trigger, error: err.message });
-    throw err;
-  }
+  return { statusCode: 200, sent };
 }
