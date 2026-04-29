@@ -22,7 +22,7 @@ See `SPEC.md` in this repo for the full specification.
 ## Tech Stack
 
 - **Frontend:** Vanilla HTML / CSS / JS PWA (no bundler, no React, no TypeScript)
-- **Backend:** Node.js 20.x Lambda functions (ES modules)
+- **Backend:** Node.js 22.x Lambda functions (ES modules)
 - **Infra:** Terraform (local state)
 - **AWS Region:** `us-east-2` (Ohio) — ALL resources go here
 - **Domain:** `justexciting.com` (already registered via Route53)
@@ -66,7 +66,7 @@ These resources already exist in the AWS account. Terraform must reference them 
 
 ## Node.js Conventions
 
-- Runtime: `nodejs20.x`
+- Runtime: `nodejs22.x`
 - ES modules: `"type": "module"` in `backend/package.json`; use `import` / `export`, never `require`
 - **AWS SDK v3 only** — `@aws-sdk/client-dynamodb`, `@aws-sdk/client-ses`, etc. Do NOT use `aws-sdk` (v2, deprecated).
 - Timezone handling: use `date-fns-tz` for PST/PDT math (not moment, not dayjs)

@@ -33,7 +33,7 @@ resource "aws_lambda_function" "functions" {
 
   function_name = "${local.prefix}-${each.key}"
   handler       = each.value
-  runtime       = "nodejs20.x"
+  runtime       = "nodejs22.x"
   timeout       = 10
   memory_size   = 128
 
