@@ -73,7 +73,37 @@ body::before {
   );
   pointer-events: none;
   z-index: 0;
+  transition: opacity 0.4s var(--ease-out);
 }
+
+/* ================================================================
+   OUTDOOR MODE — bright-daylight contrast boost
+   Triggered by the sun toggle (top-right). Lifts text and gold
+   luminance, raises surface levels off pure black, and removes the
+   warm vignette so the screen is readable in direct sunlight.
+   ================================================================ */
+
+html.outdoor {
+  --bg: #1a1a1d;
+  --bg-card: #232328;
+  --bg-elevated: #2c2c32;
+  --bg-hover: #34343a;
+
+  --gold: #ffd874;
+  --gold-light: #ffe89a;
+  --gold-dim: #d9a939;
+  --gold-glow: rgba(255, 216, 116, 0.18);
+  --gold-border: rgba(255, 216, 116, 0.45);
+
+  --text: #ffffff;
+  --text-soft: #d8d4c8;
+  --text-muted: #a8a190;
+
+  --border: #3a3a40;
+  --border-light: #4a4a52;
+}
+
+html.outdoor body::before { opacity: 0; }
 
 /* ---- Screens ---- */
 
@@ -432,6 +462,28 @@ body::before {
   border-color: var(--border);
   color: rgba(80, 75, 68, 0.45);
 }
+
+html.outdoor .tile {
+  background: linear-gradient(160deg, #2a2925, #1f1d1a);
+}
+
+html.outdoor .tile--locked {
+  background: linear-gradient(160deg, #232220, #1a1918);
+  color: rgba(168, 161, 144, 0.65);
+}
+
+html.outdoor .tile--ready {
+  background: linear-gradient(160deg, #3d3320, #2a2316);
+  border-color: rgba(255, 216, 116, 0.55);
+  color: var(--gold);
+}
+
+html.outdoor .tile--opened {
+  background: linear-gradient(160deg, #3a3120, #261f12);
+  border-color: rgba(255, 216, 116, 0.55);
+}
+
+html.outdoor .tile-num { color: rgba(255, 255, 255, 0.5); }
 
 .tile--ready {
   background: linear-gradient(160deg, #1f1a10, #14110a);
@@ -903,6 +955,45 @@ body::before {
 }
 
 .offline-banner.visible { display: block; }
+
+/* ---- Outdoor mode toggle ---- */
+
+.outdoor-toggle {
+  position: fixed;
+  top: calc(var(--safe-top) + 12px);
+  right: 14px;
+  z-index: 200;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 19, 15, 0.55);
+  border: 1px solid var(--gold-border);
+  border-radius: 50%;
+  color: var(--gold-dim);
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: color 0.25s, border-color 0.25s, background 0.25s, transform 0.25s var(--ease-out);
+}
+
+.outdoor-toggle:hover { color: var(--gold); border-color: var(--gold); }
+.outdoor-toggle:active { transform: scale(0.92); }
+
+.outdoor-toggle-icon { display: block; }
+.outdoor-toggle .outdoor-toggle-icon--moon { display: none; }
+
+html.outdoor .outdoor-toggle {
+  background: rgba(255, 216, 116, 0.16);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+html.outdoor .outdoor-toggle .outdoor-toggle-icon--sun { display: none; }
+html.outdoor .outdoor-toggle .outdoor-toggle-icon--moon { display: block; }
 
 /* ---- Keyframes ---- */
 

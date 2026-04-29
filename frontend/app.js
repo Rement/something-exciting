@@ -248,6 +248,25 @@ document.addEventListener('switch-to-user', () => {
 window.addEventListener('offline', () => offline.classList.add('visible'));
 window.addEventListener('online', () => offline.classList.remove('visible'));
 
+/* ---- Outdoor (bright-daylight) mode ---- */
+
+const outdoorBtn = document.getElementById('outdoor-toggle');
+const root = document.documentElement;
+const syncOutdoorBtn = () => {
+  const on = root.classList.contains('outdoor');
+  outdoorBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  outdoorBtn.setAttribute(
+    'aria-label',
+    on ? 'Switch to night mode' : 'Switch to bright daylight mode',
+  );
+};
+syncOutdoorBtn();
+outdoorBtn.addEventListener('click', () => {
+  const on = root.classList.toggle('outdoor');
+  localStorage.setItem('outdoorMode', on ? '1' : '0');
+  syncOutdoorBtn();
+});
+
 /* ---- Boot ---- */
 
 (async function boot() {
