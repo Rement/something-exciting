@@ -15,7 +15,6 @@ locals {
     auth             = "src/authHandler.handler"
     state            = "src/stateHandler.handler"
     scratch          = "src/scratchHandler.handler"
-    reveal           = "src/revealHandler.handler"
     reset            = "src/resetHandler.handler"
     email-cron       = "src/emailCronHandler.handler"
     telegram-webhook = "src/telegramHandler.handler"
@@ -23,11 +22,9 @@ locals {
   }
 
   lambda_env = {
-    TABLE_NAME   = aws_dynamodb_table.state.name
-    SECRET_ARN   = aws_secretsmanager_secret.app.arn
-    DOMAIN       = var.domain
-    APP_TITLE    = local.config.appTitle
-    IMAGE_BUCKET = aws_s3_bucket.images.id
+    TABLE_NAME = aws_dynamodb_table.state.name
+    SECRET_ARN = aws_secretsmanager_secret.app.arn
+    DOMAIN     = var.domain
   }
 }
 

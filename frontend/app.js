@@ -1,5 +1,5 @@
 import { api, setAuth, clearAuth, getToken, getRole } from './api.js';
-import { initCountdown, stopCountdown, isCountdownDone } from './countdown.js';
+import { initCountdown, stopCountdown } from './countdown.js';
 import { initCards, updateCards, getCard } from './scratch.js';
 import { initModal, open as openModal, close as closeModal } from './modal.js';
 import { now } from './time.js';
@@ -222,14 +222,9 @@ function applyState(state, persist = true) {
   progressEl.textContent = `${opened} / ${total}`;
 
   if (countdownDone && !finished) {
-    // Stop the timer once it hits zero — countdown.js handles itself but
-    // ensure the element is empty so the hero stays clean.
     stopCountdown();
     countEl.textContent = '';
   }
-
-  // Suppress lint: isCountdownDone unused but kept for future use
-  void isCountdownDone;
 }
 
 /* ---- Admin → user view ---- */

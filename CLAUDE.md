@@ -12,7 +12,7 @@ See `SPEC.md` in this repo for the full specification.
 - **Always read `SPEC.md` at the start of any new task**, but don't re-read it repeatedly within a session.
 - **Stop before `terraform apply`** — always show me `terraform plan` output and wait for explicit approval before running apply.
 - **Stop before any `aws` CLI command that mutates state** (create, delete, put, update). Read-only commands (get, list, describe) are fine to run without asking.
-- **Never commit secrets.** Do not commit `config.json`, `infra/terraform.tfvars`, `*.tfstate`, `*.tfstate.backup`, or `.aws/`.
+- **Never commit secrets.** Do not commit `infra/terraform.tfvars`, `*.tfstate`, `*.tfstate.backup`, or `.aws/`.
 - Keep commits small and descriptive. One concern per commit.
 - Use conventional commit prefixes: `feat:`, `fix:`, `infra:`, `docs:`, `chore:`, `test:`.
 - Prefer editing existing files over creating new ones unless the spec calls for a new file.
@@ -126,14 +126,15 @@ aws lambda invoke \
 
 ## Secrets I'll Provide When Needed
 
-These do NOT live in git. I'll paste them into `config.json` or `terraform.tfvars` when prompted:
+These do NOT live in git. I'll paste them into `infra/terraform.tfvars` (which Terraform writes into AWS Secrets Manager at apply time):
 
-- `userPin` — her PIN for the app
-- `adminPin` — my PIN for admin panel
-- `jwtSecret` — random 32+ char string
-- `recipientEmail` — her email address
-- `senderEmail` — e.g. `hello@justexciting.com`
-- Image for the reveal — uploaded to S3 manually after the image bucket is created
+- `admin_pin` — my PIN for admin panel
+- `jwt_secret` — random 32+ char string
+- `telegram_bot_token` — for the Telegram delivery bot
+
+Per-event values (user PIN, recipient name, card unlock times, card text) are entered via the admin panel and stored in DynamoDB — not in any config file.
+
+Reveal image is uploaded to the S3 image bucket manually after the bucket is created.
 
 ---
 

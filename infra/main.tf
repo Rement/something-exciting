@@ -41,7 +41,6 @@ provider "aws" {
 }
 
 locals {
-  config = jsondecode(file("../config.json"))
   prefix = "birthday-reveal"
 }
 

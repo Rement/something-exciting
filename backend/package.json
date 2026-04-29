@@ -7,15 +7,12 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1036.0",
-    "@aws-sdk/s3-request-presigner": "^3.1036.0",
+    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/client-secrets-manager": "^3.600.0",
+    "@aws-sdk/lib-dynamodb": "^3.600.0",
     "date-fns": "^3.6.0",
     "date-fns-tz": "^3.2.0",
     "jsonwebtoken": "^9.0.2"
   },
-  "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.600.0",
-    "@aws-sdk/client-secrets-manager": "^3.600.0",
-    "@aws-sdk/lib-dynamodb": "^3.600.0"
-  }
+  "devDependencies": {}
 }

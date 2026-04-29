@@ -1,4 +1,4 @@
-const CACHE = 'birthday-reveal-v16';
+const CACHE = 'birthday-reveal-v17';
 const SHELL = [
   '/',
   '/index.html',

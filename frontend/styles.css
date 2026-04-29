@@ -1019,5 +1019,3 @@ html.outdoor .outdoor-toggle .outdoor-toggle-icon--moon { display: block; }
   .cards-row--solo .tile { width: 78px; height: 60px; }
 }
 
-/* Email screen (kept for compat, currently unused) */
-#screen-email { min-height: 100dvh; display: none; }

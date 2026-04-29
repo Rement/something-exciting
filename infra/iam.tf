@@ -57,24 +57,6 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
   })
 }
 
-# ----- S3 — upload images -----
-
-resource "aws_iam_role_policy" "lambda_s3_images" {
-  name = "${local.prefix}-lambda-s3-images"
-  role = aws_iam_role.lambda_exec.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "s3:PutObject"
-      ]
-      Resource = "${aws_s3_bucket.images.arn}/*"
-    }]
-  })
-}
-
 # ----- Secrets Manager — read app secrets -----
 
 resource "aws_iam_role_policy" "lambda_secrets" {

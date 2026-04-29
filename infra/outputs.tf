@@ -8,11 +8,6 @@ output "frontend_bucket_name" {
   value       = aws_s3_bucket.frontend.id
 }
 
-output "image_bucket_name" {
-  description = "S3 bucket name for the reveal image"
-  value       = aws_s3_bucket.images.id
-}
-
 output "api_gateway_url" {
   description = "API Gateway invoke URL"
   value       = aws_api_gateway_stage.api.invoke_url

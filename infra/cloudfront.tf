@@ -7,25 +7,11 @@ resource "aws_cloudfront_origin_access_control" "s3" {
   signing_protocol                  = "sigv4"
 }
 
-# ----- CloudFront Function: strip /image prefix for images origin -----
-
-resource "aws_cloudfront_function" "rewrite_image_path" {
-  name    = "${local.prefix}-rewrite-image-path"
-  runtime = "cloudfront-js-2.0"
-  code    = <<-EOF
-    function handler(event) {
-      var request = event.request;
-      request.uri = request.uri.replace(/^\/image/, '');
-      return request;
-    }
-  EOF
-}
-
 # ----- Cache policy: includes query strings for cache-busting (?v=123) -----
 
 resource "aws_cloudfront_cache_policy" "frontend" {
   name        = "${local.prefix}-frontend-cache"
-  default_ttl = 300   # 5 min for files without Cache-Control
+  default_ttl = 300 # 5 min for files without Cache-Control
   min_ttl     = 0
   max_ttl     = 31536000
 
@@ -40,7 +26,7 @@ resource "aws_cloudfront_cache_policy" "frontend" {
       query_string_behavior = "all"
     }
     enable_accept_encoding_brotli = true
-    enable_accept_encoding_gzip  = true
+    enable_accept_encoding_gzip   = true
   }
 }
 
@@ -57,13 +43,6 @@ resource "aws_cloudfront_distribution" "main" {
   origin {
     domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
     origin_id                = "frontend"
-    origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
-  }
-
-  # Origin: images S3 bucket
-  origin {
-    domain_name              = aws_s3_bucket.images.bucket_regional_domain_name
-    origin_id                = "images"
     origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
   }
 
@@ -88,22 +67,6 @@ resource "aws_cloudfront_distribution" "main" {
     cached_methods         = ["GET", "HEAD"]
     cache_policy_id        = aws_cloudfront_cache_policy.frontend.id
     compress               = true
-  }
-
-  # /image/* → images bucket (path prefix stripped by function)
-  ordered_cache_behavior {
-    path_pattern           = "/image/*"
-    target_origin_id       = "images"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    cache_policy_id        = aws_cloudfront_cache_policy.frontend.id
-    compress               = true
-
-    function_association {
-      event_type   = "viewer-request"
-      function_arn = aws_cloudfront_function.rewrite_image_path.arn
-    }
   }
 
   # /api/* → API Gateway (no caching, forward all headers)
@@ -161,21 +124,3 @@ resource "aws_s3_bucket_policy" "frontend" {
   })
 }
 
-resource "aws_s3_bucket_policy" "images" {
-  bucket = aws_s3_bucket.images.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "cloudfront.amazonaws.com" }
-      Action    = "s3:GetObject"
-      Resource  = "${aws_s3_bucket.images.arn}/*"
-      Condition = {
-        StringEquals = {
-          "AWS:SourceArn" = aws_cloudfront_distribution.main.arn
-        }
-      }
-    }]
-  })
-}

@@ -82,7 +82,7 @@ Day 5 — Fri May 15 2026 (birthday)
 ### 3.4 Reveal flow
 - At May 15 1:00 PM PST, the Reveal button appears with a fade-in.
 - User presses it → blurred image smoothly un-blurs (CSS filter transition, ~2 seconds).
-- Below revealed image, a personal message appears (configurable in `config.json`).
+- Below revealed image, a personal message appears (the final card's text, set per-event in the admin panel).
 
 ### 3.5 Admin panel
 Access: enter admin PIN (instead of user PIN) on login screen → admin screen loads.
@@ -159,7 +159,6 @@ birthday-reveal/
 ├── README.md                      # Deploy + test guide
 ├── SPEC.md                        # This file
 ├── CLAUDE.md                      # Persistent instructions for Claude Code
-├── config.json                    # Placeholders for all secrets/dates (gitignored when real values filled)
 ├── .gitignore
 │
 ├── frontend/
@@ -216,39 +215,30 @@ birthday-reveal/
 
 ---
 
-## 6. `config.json` Schema
+## 6. Configuration
 
-Single source of truth for secrets and tunables. Placeholders marked `REPLACE_ME`.
+Configuration is split between three places — there is no `config.json`.
 
-```json
-{
-  "userPin": "REPLACE_ME_USER_PIN",
-  "adminPin": "REPLACE_ME_ADMIN_PIN",
-  "jwtSecret": "REPLACE_ME_RANDOM_32_CHAR_STRING",
+**`infra/terraform.tfvars`** (gitignored) — secrets and the few build-time inputs Terraform needs:
 
-  "startDateISO": "2026-05-11T21:00:00-07:00",
-  "revealDateISO": "2026-05-15T13:00:00-07:00",
-  "timezone": "America/Los_Angeles",
-
-  "gridCols": 6,
-  "gridRows": 4,
-  "tileDropHoursPST": [8, 10, 12, 14, 16, 18],
-
-  "recipientEmail": "REPLACE_ME_HER_EMAIL@example.com",
-  "senderEmail": "hello@justexciting.com",
-
-  "domain": "justexciting.com",
-  "imageS3Key": "reveal.jpg",
-
-  "personalMessage": "REPLACE_ME with your message shown after reveal",
-  "appTitle": "For You"
-}
+```hcl
+admin_pin          = "REPLACE_ME_ADMIN_PIN"
+jwt_secret         = "REPLACE_ME_RANDOM_32_CHAR_STRING"
+telegram_bot_token = "REPLACE_ME_TELEGRAM_BOT_TOKEN"
+# domain and aws_region have defaults in variables.tf — override here only if needed
 ```
 
-`config.json` is:
-- Read by Lambda handlers at runtime (bundled with deploy).
-- Read by frontend **only for non-sensitive fields** (grid size, dates, title). PINs and secrets NEVER ship to frontend.
-- Referenced by Terraform via `jsondecode(file("../config.json"))` for provisioning.
+Terraform writes these into **AWS Secrets Manager** (`birthday-reveal-secrets`) at apply time, along with a generated `telegramWebhookSecret`. Lambdas read the bundle at runtime via `SECRET_ARN` (see `backend/src/lib/secrets.js`).
+
+**Lambda env vars** (set by `infra/lambda.tf`):
+- `TABLE_NAME` — DynamoDB table name
+- `SECRET_ARN` — Secrets Manager ARN
+- `DOMAIN` — public domain (used for email links)
+- `IMAGE_BUCKET` — S3 bucket for the reveal image
+
+**Per-event data** (PIN, recipient name, card unlock times, card text/icons, start/reveal dates) lives in **DynamoDB** under each event row — managed via the admin panel, not config files. See §7.
+
+The frontend never reads any config; it discovers everything it needs from `GET /api/state` after auth.
 
 ---
 
@@ -284,11 +274,11 @@ All endpoints require `Authorization: Bearer <token>` header **except** `POST /a
 ### `POST /api/auth`
 Request:
 ```json
-{ "pin": "1234" }
+{ "pin": "XXXX" }
 ```
 Response (200):
 ```json
-{ "token": "eyJhbGc...", "role": "user" }
+{ "token": "eyJhGc...", "role": "user" }
 ```
 - If PIN matches user PIN → `role: "user"`.
 - If PIN matches admin PIN → `role: "admin"`.
@@ -384,7 +374,7 @@ Templates are HTML, styled with inline CSS (gold accents on black background), d
 ## 11. Security
 
 - **HTTPS only**, enforced by CloudFront.
-- **PIN stored server-side only**, in Lambda env var (from `config.json` at deploy time).
+- **PINs stored server-side only** — admin PIN in AWS Secrets Manager; per-event user PINs in DynamoDB. Neither ships to the frontend.
 - **JWT** for session — HS256, 30-day expiry.
 - **API Gateway Lambda authorizer** verifies JWT on every protected endpoint.
 - **CORS** locked to `https://justexciting.com` origin.
@@ -460,7 +450,7 @@ Service worker: cache-first for shell (HTML/CSS/JS), network-first for `/api/*`.
 ## 14. Deployment Steps (README will expand these)
 
 1. Clone repo / scaffold.
-2. Copy `config.json` template → fill in all `REPLACE_ME`s.
+2. Create `infra/terraform.tfvars` and fill in `admin_pin`, `jwt_secret`, `telegram_bot_token`.
 3. `cd infra && terraform init && terraform plan && terraform apply`.
 4. Upload reveal image to S3 image bucket: `aws s3 cp reveal.jpg s3://birthday-reveal-images/reveal.jpg`.
 5. Build + deploy Lambda (handled by Terraform `archive_file`).
